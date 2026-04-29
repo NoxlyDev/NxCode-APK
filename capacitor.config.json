@@ -1,5 +1,12 @@
 {
   "appId": "xyz.noxlydev.nxcode",
   "appName": "NxCode",
-  "webDir": "www"
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "server": {
+    "allowNavigation": ["localhost:8880"]
+  }
 }
