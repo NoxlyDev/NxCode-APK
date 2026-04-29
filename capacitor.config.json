@@ -8,11 +8,10 @@
   },
   "server": {
     "allowNavigation": [
-      "localhost",
-      "localhost:8880",
-      "127.0.0.1",
-      "127.0.0.1:8880",
-      "*.localhost"
+      "http://localhost:8880",
+      "http://localhost:8880/*",
+      "http://127.0.0.1:8880",
+      "http://127.0.0.1:8880/*"
     ]
   }
 }
