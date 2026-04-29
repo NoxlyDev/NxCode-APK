@@ -1,11 +1,290 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NxCode</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Syne:wght@700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .grid {
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,180,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,180,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridFade 0.8s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes gridFade { to { opacity: 1; } }
+
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0;
+    animation: orbAppear 1.2s ease forwards;
+  }
+
+  .orb1 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(0,120,255,0.3), transparent);
+    top: -50px; left: -50px;
+    animation-delay: 0.3s;
+  }
+
+  .orb2 {
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(0,200,180,0.2), transparent);
+    bottom: -50px; right: -50px;
+    animation-delay: 0.5s;
+  }
+
+  @keyframes orbAppear { to { opacity: 1; } }
+
+  .splash {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    z-index: 10;
+  }
+
+  .logo-wrap {
+    position: relative;
+    width: 90px; height: 90px;
+    opacity: 0;
+    animation: logoIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s forwards;
+  }
+
+  @keyframes logoIn {
+    from { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+    to { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+
+  .logo-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #0048ff, #00c8b4);
+    box-shadow: 0 0 40px rgba(0,120,255,0.5), 0 0 80px rgba(0,120,255,0.2);
+  }
+
+  .logo-bg::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: 21px;
+    background: #0d0d18;
+  }
+
+  .logo-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    background: linear-gradient(135deg, #00aaff, #00e8c8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+  }
+
+  .pulse-ring {
+    position: absolute;
+    inset: -8px;
+    border-radius: 30px;
+    border: 1px solid rgba(0,180,255,0.3);
+    animation: pulseRing 2s ease-in-out 1s infinite;
+    opacity: 0;
+  }
+
+  .pulse-ring2 { inset: -16px; border-radius: 36px; animation-delay: 1.3s; }
+
+  @keyframes pulseRing {
+    0% { opacity: 0; transform: scale(0.95); }
+    50% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.05); }
+  }
+
+  .name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 42px;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, #ffffff 30%, #00c8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0;
+    animation: fadeUp 0.5s ease 0.8s forwards;
+  }
+
+  .tagline {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: rgba(0,180,255,0.6);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 0.5s ease 1s forwards;
+  }
+
+  .loader-wrap {
+    width: 160px; height: 2px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 0.3s ease 1.2s forwards;
+    margin-top: 8px;
+  }
+
+  .loader-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0048ff, #00c8b4);
+    border-radius: 2px;
+    animation: loadBar 2s cubic-bezier(0.4, 0, 0.2, 1) 1.4s forwards;
+    box-shadow: 0 0 10px rgba(0,180,255,0.8);
+  }
+
+  @keyframes loadBar {
+    0% { width: 0%; }
+    60% { width: 70%; }
+    100% { width: 100%; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .code-lines {
+    position: fixed;
+    bottom: 40px;
+    left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 30px;
+    opacity: 0;
+    animation: fadeUp 0.5s ease 1.3s forwards;
+  }
+
+  .code-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,180,255,0.15), transparent);
+    animation: scanLine 2s ease-in-out infinite;
+  }
+
+  .code-line:nth-child(2) { animation-delay: 0.3s; opacity: 0.6; }
+  .code-line:nth-child(3) { animation-delay: 0.6s; opacity: 0.3; }
+
+  @keyframes scanLine {
+    0%, 100% { transform: scaleX(0.3); opacity: 0.3; }
+    50% { transform: scaleX(1); opacity: 1; }
+  }
+
+  .version {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    font-size: 9px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: fadeUp 0.3s ease 1.5s forwards;
+  }
+
+  /* Splash fade out */
+  #splash.hide {
+    animation: splashOut 0.5s ease forwards;
+  }
+
+  @keyframes splashOut {
+    to { opacity: 0; pointer-events: none; }
+  }
+
+  #app {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border: none;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  #app.show {
+    display: block;
+    opacity: 1;
+  }
+</style>
 </head>
-<body style="margin:0;padding:0;overflow:hidden">
-  <iframe src="http://localhost:8880" 
-    style="width:100vw;height:100vh;border:none">
-  </iframe>
+<body>
+
+<div id="splash">
+  <div class="grid"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+
+  <div class="splash">
+    <div class="logo-wrap">
+      <div class="logo-bg"></div>
+      <div class="logo-text">Nx</div>
+      <div class="pulse-ring"></div>
+      <div class="pulse-ring pulse-ring2"></div>
+    </div>
+    <div class="name">NxCode</div>
+    <div class="tagline">Code anywhere · Powered by VS Code</div>
+    <div class="loader-wrap">
+      <div class="loader-bar"></div>
+    </div>
+  </div>
+
+  <div class="code-lines">
+    <div class="code-line"></div>
+    <div class="code-line"></div>
+    <div class="code-line"></div>
+  </div>
+
+  <div class="version">v1.0.0 · arm64</div>
+</div>
+
+<iframe id="app" src="http://localhost:8880"></iframe>
+
+<script>
+  // Prevent screen sleep
+  navigator.wakeLock?.request('screen').catch(() => {});
+  
+  // Tunggu splash selesai (3.5 detik) lalu tampil iframe
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    const app = document.getElementById('app');
+    splash.classList.add('hide');
+    app.style.display = 'block';
+    setTimeout(() => { app.style.opacity = '1'; }, 50);
+    setTimeout(() => { splash.style.display = 'none'; }, 500);
+  }, 3500);
+</script>
+
 </body>
 </html>
