@@ -274,32 +274,46 @@
   // ─── FIX: window.open yang aman ────────────────────────────────────────────
   // Masalah sebelumnya: memanggil AppLauncher yang tidak terinstall → crash
   // Fix: buka URL eksternal via anchor click, URL internal diabaikan
-  window.open = function(url, target, features) {
-    if (!url || typeof url !== 'string') return null;
+// Ganti script lama dengan ini
+window.open = function(url, target, features) {
+  if (!url || typeof url !== 'string') return null;
+  var isLocal = url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('about:');
+  if (!isLocal && (url.startsWith('http://') || url.startsWith('https://'))) {
+    try {
+      var a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } catch(e) {}
+  }
+  return null;
+};
 
-    var isLocal = url.startsWith('about:') ||
-                  url.startsWith('javascript:') ||
-                  url.includes('localhost') ||
-                  url.includes('127.0.0.1');
+navigator.wakeLock?.request('screen').catch(function(){});
 
-    if (!isLocal && (url.startsWith('http://') || url.startsWith('https://'))) {
-      // Buka di browser external Android
-      try {
-        var a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      } catch (e) {
-        console.warn('[NxCode] window.open external failed:', e);
-      }
-    }
+// Polling: tunggu code-server beneran ready, baru tampil
+function waitForCodeServer(callback, maxTries) {
+  maxTries = maxTries || 30; // max 30 detik
+  var tries = 0;
+  function check() {
+    fetch('http://localhost:8880', { method: 'HEAD', mode: 'no-cors' })
+      .then(function() { callback(); })
+      .catch(function() {
+        tries++;
+        if (tries < maxTries) setTimeout(check, 1000);
+        else callback(); // timeout, tampil aja
+      });
+  }
+  setTimeout(check, 1500); // mulai cek setelah 1.5 detik
+}
 
-    // Selalu return null — kita tidak manage popup window terpisah
-    return null;
-  };
+waitForCodeServer(function() {
+  var splash = document.getElementById('splash');
+  var app = document.getElementById('app');
+  splash.classList.add('hide');
+  app.style.display = 'block';
+  setTimeout(function() { app.style.opacity = '1'; }, 50);
+  setTimeout(function() { splash.style.display = 'none'; }, 500);
+});
 
   // ─── FIX: Tangkap link klik di dalam iframe ─────────────────────────────
   // Kalau code-server inject link di parent context
