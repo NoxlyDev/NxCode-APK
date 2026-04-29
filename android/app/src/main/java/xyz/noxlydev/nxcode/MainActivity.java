@@ -3,10 +3,12 @@ package xyz.noxlydev.nxcode;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import com.getcapacitor.Bridge;
 import com.getcapacitor.BridgeActivity;
+import com.getcapacitor.BridgeWebViewClient;
 
 public class MainActivity extends BridgeActivity {
 
@@ -27,44 +29,44 @@ public class MainActivity extends BridgeActivity {
 
         WebSettings settings = webView.getSettings();
 
-        // JavaScript wajib aktif untuk code-server
         settings.setJavaScriptEnabled(true);
-
-        // DOM storage (VS Code pakai ini untuk settings/state)
         settings.setDomStorageEnabled(true);
-
-        // Database storage
         settings.setDatabaseEnabled(true);
-
-        // Izinkan akses file lokal
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
-
-        // Izinkan mixed content (HTTP di dalam HTTPS context)
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-
-        // Cache mode default supaya Service Worker code-server bisa berjalan
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        // FIX: Matikan force dark mode — penyebab utama layar hitam di Android 10+
-        // Force dark dari sistem bisa membuat canvas/renderer VS Code jadi hitam
+        // Matikan force dark — cegah layar hitam di Android 10+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                // Android 13+ pakai API baru
                 settings.setAlgorithmicDarkeningAllowed(false);
             } else {
-                // Android 10-12
                 settings.setForceDark(WebSettings.FORCE_DARK_OFF);
             }
         }
 
-        // FIX: Background color eksplisit — cegah flicker hitam saat load
         webView.setBackgroundColor(Color.parseColor("#1e1e1e"));
-
-        // Prevent long press default (copy/paste bubble yang ganggu)
         webView.setOnLongClickListener(v -> true);
-
-        // Haptic feedback dimatikan karena long press di-override
         webView.setHapticFeedbackEnabled(false);
+
+        // FIX UTAMA: Override WebViewClient untuk mencegah dialog "Open with"
+        // Kapasitor default-nya melempar Android intent untuk semua URL http://
+        // yang tidak dikenal — ini yang menyebabkan dialog muncul.
+        // Solusi: extend BridgeWebViewClient, tangkap URL localhost,
+        // dan paksa load langsung di WebView tanpa intent.
+        webView.setWebViewClient(new BridgeWebViewClient(bridge) {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                // Semua URL localhost/127.0.0.1 → load dalam WebView, BUKAN intent
+                if (url.contains("localhost") || url.contains("127.0.0.1")) {
+                    view.loadUrl(url);
+                    return true;
+                }
+                // URL eksternal → biarkan Capacitor handle (buka di luar app)
+                return super.shouldOverrideUrlLoading(view, request);
+            }
+        });
     }
 }
