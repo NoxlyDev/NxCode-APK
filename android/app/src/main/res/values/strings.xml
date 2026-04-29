@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NxCode</string>
+    <string name="title_activity_main">NxCode</string>
+    <string name="package_name">xyz.noxlydev.nxcode</string>
+    <string name="custom_url_scheme">xyz.noxlydev.nxcode</string>
+</resources>
