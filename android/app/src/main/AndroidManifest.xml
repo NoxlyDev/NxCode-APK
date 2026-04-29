@@ -16,7 +16,8 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
-            android:exported="true">
+            android:exported="true"
+            android:hardwareAccelerated="true">
 
             <!-- Launcher intent -->
             <intent-filter>
@@ -25,9 +26,8 @@
             </intent-filter>
 
             <!--
-                FIX: Tangkap intent VIEW untuk http/https
+                Tangkap intent VIEW untuk http/https
                 Tanpa ini → URL dari popup/link external bisa crash
-                karena Android tidak tahu harus handle ke mana
             -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
