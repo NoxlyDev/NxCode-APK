@@ -213,7 +213,6 @@
     animation: fadeUp 0.3s ease 1.5s forwards;
   }
 
-  /* Splash fade out */
   #splash.hide {
     animation: splashOut 0.5s ease forwards;
   }
@@ -272,24 +271,65 @@
 <iframe id="app" src="http://localhost:8880"></iframe>
 
 <script>
+  // ─── FIX: window.open yang aman ────────────────────────────────────────────
+  // Masalah sebelumnya: memanggil AppLauncher yang tidak terinstall → crash
+  // Fix: buka URL eksternal via anchor click, URL internal diabaikan
+  window.open = function(url, target, features) {
+    if (!url || typeof url !== 'string') return null;
 
-  window.open = function(url) {
-  if (url && url.startsWith('http')) {
-    Capacitor.Plugins.AppLauncher.openUrl({ url: url });
-  }
-};
+    var isLocal = url.startsWith('about:') ||
+                  url.startsWith('javascript:') ||
+                  url.includes('localhost') ||
+                  url.includes('127.0.0.1');
 
-  // Prevent screen sleep
-  navigator.wakeLock?.request('screen').catch(() => {});
-  
-  // Tunggu splash selesai (3.5 detik) lalu tampil iframe
-  setTimeout(() => {
-    const splash = document.getElementById('splash');
-    const app = document.getElementById('app');
+    if (!isLocal && (url.startsWith('http://') || url.startsWith('https://'))) {
+      // Buka di browser external Android
+      try {
+        var a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (e) {
+        console.warn('[NxCode] window.open external failed:', e);
+      }
+    }
+
+    // Selalu return null — kita tidak manage popup window terpisah
+    return null;
+  };
+
+  // ─── FIX: Tangkap link klik di dalam iframe ─────────────────────────────
+  // Kalau code-server inject link di parent context
+  document.addEventListener('click', function(e) {
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href) return;
+
+    var isExternal = (href.startsWith('http://') || href.startsWith('https://')) &&
+                     !href.includes('localhost') &&
+                     !href.includes('127.0.0.1');
+
+    if (isExternal) {
+      e.preventDefault();
+      window.open(href);
+    }
+  });
+
+  // ─── Prevent screen sleep ────────────────────────────────────────────────
+  navigator.wakeLock?.request('screen').catch(function() {});
+
+  // ─── Splash → iframe ─────────────────────────────────────────────────────
+  setTimeout(function() {
+    var splash = document.getElementById('splash');
+    var app = document.getElementById('app');
     splash.classList.add('hide');
     app.style.display = 'block';
-    setTimeout(() => { app.style.opacity = '1'; }, 50);
-    setTimeout(() => { splash.style.display = 'none'; }, 500);
+    setTimeout(function() { app.style.opacity = '1'; }, 50);
+    setTimeout(function() { splash.style.display = 'none'; }, 500);
   }, 3500);
 </script>
 
