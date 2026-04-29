@@ -19,23 +19,14 @@
             android:exported="true"
             android:hardwareAccelerated="true">
 
-            <!-- Launcher intent -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!--
-                Tangkap intent VIEW untuk http/https
-                Tanpa ini → URL dari popup/link external bisa crash
-            -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-            </intent-filter>
+            <!-- intent-filter http/https DIHAPUS -->
+            <!-- Filter itu menyebabkan Android intercept navigasi WebView ke localhost:8880 -->
+            <!-- dan menampilkan dialog "Open with", sehingga app tidak pernah bisa buka code-server -->
 
         </activity>
 
@@ -50,7 +41,6 @@
         </provider>
     </application>
 
-    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_CLIPBOARD" />
     <uses-permission android:name="android.permission.WRITE_CLIPBOARD" />
